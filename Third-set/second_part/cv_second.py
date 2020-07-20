@@ -117,11 +117,14 @@ def perform_pca(deepfeats):
     return Xreduced
 
 
-def visualization(after_pca, deepfeats, name):
+def visualization(after_pca, deepfeats):
     deepfeats_reduced = np.reshape(
         after_pca, [deepfeats.shape[0], deepfeats.shape[1], 3])
     print(deepfeats_reduced.shape)
-    cv2.imwrite(name, deepfeats_reduced)
+    cv2.namedWindow('deep feature image', cv2.WINDOW_NORMAL)
+    cv2.imshow('deep feature image', deepfeats_reduced)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
@@ -131,15 +134,14 @@ if __name__ == "__main__":
     'mobilenetv2_coco_voctrainaug' and get as result the deep feature:
     'concat_projection/Relu:0'
     Then perform PCA to the tensor for dropping the dimension to d = 3
-    Finally save the image using cv2.
+    Finally show the image using cv2 like we did in the second set of exerices.
     '''
     arguments = len(sys.argv)
-    if not bool(arguments == 3):
-        raise("Wrong values, try: python cv_second.py <input image.jpg/png> <output image.jpg/png>")
+    if not bool(arguments == 2):
+        raise("Wrong values, try: python cv_second.py <input image.jpg/png>")
     image = sys.argv[1]
-    output_name = sys.argv[2]
     MODEL = get_model()
     # we don't need the reshaped image
     _, deep_feature = get_deep_feature(image, MODEL)
     after_pca = perform_pca(deep_feature)
-    visualization(after_pca, deep_feature, output_name)
+    visualization(after_pca, deep_feature)
