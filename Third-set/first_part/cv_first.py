@@ -1,3 +1,7 @@
+# Ioannis Chouliaras 2020 -- AM: 2631
+# First part of the final project of the course: Computer Vision
+# Professor: Sfikas G.
+
 import os
 import sys
 import tensorflow as tf
@@ -6,8 +10,6 @@ import tempfile
 from six.moves import urllib
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
-
-global MODEL
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # annoying warning.
 
@@ -89,20 +91,9 @@ def vis_segmentation(image, seg_map):
 
 
 def get_model():
-    global MODEL
     MODEL_NAME = 'mobilenetv2_coco_voctrainval'
-
     _DOWNLOAD_URL_PREFIX = 'http://download.tensorflow.org/models/'
-    _MODEL_URLS = {
-        'mobilenetv2_coco_voctrainaug':
-            'deeplabv3_mnv2_pascal_train_aug_2018_01_29.tar.gz',
-        'mobilenetv2_coco_voctrainval':
-            'deeplabv3_mnv2_pascal_trainval_2018_01_29.tar.gz',
-        'xception_coco_voctrainaug':
-            'deeplabv3_pascal_train_aug_2018_01_04.tar.gz',
-        'xception_coco_voctrainval':
-            'deeplabv3_pascal_trainval_2018_01_04.tar.gz',
-    }
+    _MODEL_URL = 'deeplabv3_mnv2_pascal_trainval_2018_01_29.tar.gz'
     _TARBALL_NAME = 'deeplab_model.tar.gz'
 
     model_dir = tempfile.mkdtemp()
@@ -110,12 +101,13 @@ def get_model():
 
     download_path = os.path.join(model_dir, _TARBALL_NAME)
     print('downloading model, this might take a while...')
-    urllib.request.urlretrieve(_DOWNLOAD_URL_PREFIX + _MODEL_URLS[MODEL_NAME],
+    urllib.request.urlretrieve(_DOWNLOAD_URL_PREFIX + _MODEL_URL,
                                download_path)
     print('download completed! loading DeepLab model...')
 
     MODEL = DeepLabModel(download_path)
     print('model loaded successfully!')
+    return MODEL
 
 
 def create_labels():
@@ -129,7 +121,7 @@ def create_labels():
     return (label_names, full_label_map, full_color_map)
 
 
-def run_visualization(image_name, output_name):
+def run_visualization(image_name, output_name, MODEL):
     try:
         original_im = Image.open(image_name)
     except IOError:
@@ -171,13 +163,12 @@ def draw_image(image, colors, labels, width, height):
 
 
 if __name__ == "__main__":
-    global MODEL
     arguments = len(sys.argv)
     if not bool(arguments == 3):
-        raise("Wrong values: Python3 warp.py <input-file> <output-file>")
+        raise("Wrong values: python3 warp.py <input-file> <output-file>")
     input_name = sys.argv[1]
     output_name = sys.argv[2]
     (LABEL_NAMES, FULL_LABEL_MAP, FULL_COLOR_MAP) = create_labels()
-    get_model()
-    run_visualization(input_name, output_name)
+    MODEL = get_model()
+    run_visualization(input_name, output_name, MODEL)
 # end of main
